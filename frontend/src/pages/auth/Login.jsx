@@ -1,23 +1,22 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { loginUser } from "../../services/authService";
+import "./Login.css";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setForm({
+      ...form,
       [e.target.name]: e.target.value,
     });
   };
@@ -25,96 +24,184 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError("");
+    if (!form.email || !form.password) {
+      alert("Please enter email and password");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const data = await loginUser(formData);
+      const response = await loginUser({
+        email: form.email,
+        password: form.password,
+      });
 
-      if (!data.success) {
-        throw new Error(data.message);
-      }
+      console.log("LOGIN RESPONSE:", response);
 
-      login(data.user, data.token);
+      if (response.success) {
+        // Save login information
+        localStorage.setItem("isLoggedIn", "true");
 
-      if (data.user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (data.user.role === "teacher") {
-        navigate("/teacher/dashboard");
-      } else if (data.user.role === "parent") {
-        navigate("/parent/dashboard");
-      } else {
-        navigate("/student/dashboard");
+        if (response.user) {
+          localStorage.setItem("user", JSON.stringify(response.user));
+        }
+
+        alert("Login successful! 🎉");
+
+        // Role based navigation
+        const role = response.user?.role;
+
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (role === "parent") {
+          navigate("/parent/dashboard");
+        } else if (role === "teacher") {
+          navigate("/teacher/dashboard");
+        } else {
+          navigate("/");
+        }
       }
     } catch (error) {
-      setError(
-        error.response?.data?.message ||
-        error.message ||
-        "Login failed"
-      );
+      console.error("LOGIN ERROR:", error);
+
+      alert(error.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
+    <div className="login-page">
+      <div className="login-container">
 
-        <div className="auth-header">
-          <h1>AXIS School</h1>
-          <p>Welcome back 👋</p>
+        {/* Left Section */}
+        <div className="login-info">
+          <div className="school-logo">
+            <span>AXIS</span>
+            <small>SCHOOL</small>
+          </div>
+
+          <h1>Welcome Back! 👋</h1>
+
+          <p>
+            Login to your AXIS School account and manage your
+            school activities, academics and information.
+          </p>
+
+          <div className="login-features">
+            <div>
+              <span>✓</span>
+              <p>Secure Login</p>
+            </div>
+
+            <div>
+              <span>✓</span>
+              <p>Easy Access</p>
+            </div>
+
+            <div>
+              <span>✓</span>
+              <p>Manage Your Account</p>
+            </div>
+          </div>
         </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
+        {/* Login Form */}
+        <div className="login-card">
 
-        <form onSubmit={handleSubmit}>
+          <div className="login-card-header">
+            <h2>Sign In</h2>
 
-          <div className="form-group">
-            <label>Email</label>
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+            <p>
+              Enter your details to continue
+            </p>
           </div>
 
-          <div className="form-group">
-            <label>Password</label>
+          <form onSubmit={handleSubmit}>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
+            {/* Email */}
+            <div className="input-group">
+              <label htmlFor="email">
+                Email Address
+              </label>
+
+              <input
+                id="email"
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={form.email}
+                onChange={handleChange}
+                autoComplete="email"
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div className="input-group">
+              <div className="password-label">
+                <label htmlFor="password">
+                  Password
+                </label>
+
+                <Link to="/forgot-password">
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <div className="password-wrapper">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={handleChange}
+                  autoComplete="current-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  className="show-password"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember */}
+            <div className="remember-row">
+              <label>
+                <input type="checkbox" />
+                <span>Remember me</span>
+              </label>
+            </div>
+
+            {/* Button */}
+            <button
+              type="submit"
+              className="login-button"
+              disabled={loading}
+            >
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+          </form>
+
+          {/* Register */}
+          <div className="register-link">
+            <span>Don't have an account?</span>
+
+            <Link to="/register">
+              Create Account
+            </Link>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-button"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-        </form>
-
-        <p className="auth-footer">
-          Don't have an account?{" "}
-          <a href="/register">Create Account</a>
-        </p>
-
+        </div>
       </div>
     </div>
   );

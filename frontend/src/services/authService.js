@@ -1,13 +1,15 @@
-import api from "./api";
+import { api } from "./api";
+
 export const registerUser = async (userData) => {
-  const response = await api.post("/auth/register", userData);
-  return response.data;
+  return await api("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
 };
-export const loginUser = async (userData) => {
-  const response = await api.post("/auth/login", userData);
-  return response.data;
-};
-export const getProfile = async () => {
-  const response = await api.get("/auth/profile");
-  return response.data;
+
+export const loginUser = async (loginData) => {
+  return await api("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(loginData),
+  });
 };

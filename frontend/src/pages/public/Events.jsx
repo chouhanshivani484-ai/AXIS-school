@@ -61,9 +61,6 @@ function Events() {
   return (
     <div className="events-page">
 
-      {/* =================================================
-          PAGE HERO
-      ================================================= */}
 
       <section className="page-hero">
         <div className="page-hero-container">
@@ -81,10 +78,6 @@ function Events() {
 
         </div>
       </section>
-
-      {/* =================================================
-          EVENT CALENDAR
-      ================================================= */}
 
       <section className="content-section">
 
@@ -111,9 +104,7 @@ function Events() {
               className="event-card"
               key={event.slug}
             >
-
-              {/* DATE */}
-
+              
               <div className="event-date">
 
                 <strong>

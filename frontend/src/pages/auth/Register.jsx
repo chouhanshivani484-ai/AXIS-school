@@ -1,25 +1,23 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../services/authService";
 
 function Register() {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     email: "",
-    password: "",
     phone: "",
-    role: "student",
+    password: "",
+    role: "patient",
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setForm({
+      ...form,
       [e.target.name]: e.target.value,
     });
   };
@@ -27,31 +25,25 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError("");
-    setSuccess("");
     setLoading(true);
 
     try {
-      const data = await registerUser(formData);
+      const response = await registerUser({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        role: form.role,
+        location: "India",
+      });
 
-      if (!data.success) {
-        throw new Error(data.message);
-      }
-
-      setSuccess(
-        "Registration successful! Redirecting to login..."
-      );
-
-      setTimeout(() => {
+      if (response.success) {
+        alert("Registration successful! Please login.");
         navigate("/login");
-      }, 1500);
-
+      }
     } catch (error) {
-      setError(
-        error.response?.data?.message ||
-        error.message ||
-        "Registration failed"
-      );
+      console.error("REGISTER ERROR:", error);
+      alert(error.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -59,111 +51,114 @@ function Register() {
 
   return (
     <div className="auth-page">
-
       <div className="auth-card">
 
-        <div className="auth-header">
-          <h1>AXIS School</h1>
-          <p>Create your account</p>
+        {/* Logo */}
+        <div className="auth-logo">
+          ✚ HospitalMarket
         </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
+        <h1>Create Account</h1>
 
-        {success && (
-          <div className="success-message">
-            {success}
-          </div>
-        )}
+        <p className="auth-subtitle">
+          Create your HospitalMarket account
+        </p>
 
         <form onSubmit={handleSubmit}>
 
+          {/* Name */}
           <div className="form-group">
             <label>Full Name</label>
 
             <input
               type="text"
               name="name"
-              placeholder="Enter your name"
-              value={formData.name}
+              placeholder="Enter your full name"
+              value={form.name}
               onChange={handleChange}
               required
             />
           </div>
 
+          {/* Email */}
           <div className="form-group">
-            <label>Email</label>
+            <label>Email Address</label>
 
             <input
               type="email"
               name="email"
               placeholder="Enter your email"
-              value={formData.email}
+              value={form.email}
               onChange={handleChange}
               required
             />
           </div>
 
+          {/* Phone */}
           <div className="form-group">
-            <label>Phone</label>
+            <label>Phone Number</label>
 
             <input
               type="tel"
               name="phone"
               placeholder="Enter phone number"
-              value={formData.phone}
+              value={form.phone}
               onChange={handleChange}
+              required
             />
           </div>
 
+          {/* Password */}
           <div className="form-group">
             <label>Password</label>
 
             <input
               type="password"
               name="password"
-              placeholder="Minimum 6 characters"
-              value={formData.password}
+              placeholder="Create password"
+              value={form.password}
               onChange={handleChange}
               minLength="6"
               required
             />
           </div>
 
+          {/* Account Type */}
           <div className="form-group">
-            <label>Register As</label>
+            <label>Account Type</label>
 
             <select
               name="role"
-              value={formData.role}
+              value={form.role}
               onChange={handleChange}
             >
-              <option value="student">Student</option>
-              <option value="parent">Parent</option>
-              <option value="teacher">Teacher</option>
+              <option value="patient">Patient</option>
+              <option value="hospital">Hospital</option>
+              <option value="clinic">Clinic</option>
+              <option value="medical">Medical</option>
             </select>
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
+            className="btn-primary auth-submit"
             disabled={loading}
-            className="auth-button"
           >
             {loading ? "Creating Account..." : "Create Account"}
           </button>
 
         </form>
 
+        {/* Login Link */}
         <p className="auth-footer">
           Already have an account?{" "}
-          <a href="/login">Login</a>
+          <Link to="/login">
+            Login
+          </Link>
         </p>
 
       </div>
-
     </div>
   );
 }
